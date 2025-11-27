@@ -1,9 +1,29 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/mount.h>
 using namespace std;
 
+const char* new_root = "/new-root/rootfs";
+
 void contain(char *args[]){
+    if(chdir(new_root)!=0){
+        perror("Error changing root");
+        exit(1);
+    }
+    if(chroot(new_root)!=0){
+        perror("Error chrooting");
+        exit(1);
+    }
+    if(chdir("/")!=0){
+        perror("Error changing dir to /");
+        exit(1);
+    }
+    // add mount here "/proc"
+    if(mount("proc", "/proc", "proc", 0, nullptr)!=0){
+        perror("Error mounting proc");
+        exit(1);
+    }
     execvp(args[0], args);
     perror("execvp");
     exit(1);
